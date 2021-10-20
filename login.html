@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        .form-input {
+            margin-bottom: 0.5rem;
+        }
+        .form-input > input {
+            padding: 0.25rem;
+        }
+        .hidden{
+            visibility: hidden;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" target="_blank">Register</a>
+    <h1>Login</h1>
+    <form id="login-form">
+        <div class="form-input"><input type="text" placeholder="User Name" name="Username"/></div>
+        <div class="form-input"><input type="Password" placeholder="Password" name="Password"/></div>
+               
+        <div class="form-input">
+            <input type="Submit"/>
+        </div>
+    </form>
+    <div id="loading-indicator" class="hidden">Loading...</div>
+    <div id="sucess-indicator" class="hidden">Something is wrong...</div>
+    <div id="error-indicator" class="hidden">Something is wrong...</div>
+</body>
+<script type="text/javascript">
+    
+window.addEventListener("load", function () {
+    const form = document.getElementById("login-form");
+    form.addEventListener("submit", handleSubmit)
+})
+
+const  updateIndicator = (status, id) => {
+    // status boolene
+
+    const loadingIndicator = document.getElementById("loading-indicator");
+    if(status){
+        loadingIndicator.className = "visible";
+
+    }
+    else{
+        loadingIndicator.className = "hidden";
+
+    }
+}
+
+const handleSubmit = async () => {
+    try{
+        event.preventDefault();
+
+        const form = new FormData(event.target);
+        const username = form.get("username");
+        const password = form.get("password");
+        
+        const payload = {
+            username,
+            password,
+            
+            
+        }
+        updateIndicator(true, "loading-indicator");
+        const response = await loginUser(payload);
+        console.log(response);
+        if(!response.error) {
+            const token = response.token;
+            localStorage.setItem("token", token);
+            localStorage.setItem("username", username)
+            window.location.replace("home.html")
+        }
+        else{
+            updateIndicator(true,"loading-indicator")
+        }
+    }
+    catch (error){
+
+        // manageg error
+        updateIndicator(true,"loading-indicator")
+        console.log(error);
+    }
+    updateIndicator(false, "error-indicator")
+}
+
+function loginUser(payload){
+    return fetch("https://masai-api-mocker.herokuapp.com/auth/login",{
+        method: "POST",
+        body: JSON.stringify(payload),
+        headers: {
+            "containt-type": "application/json",
+        }
+    })
+    .then(res => res.json())
+}
+</script>
+</html>
